@@ -44,7 +44,8 @@ def listathletes(request):
             html = requests.get(url)
             soup = BeautifulSoup(html.text, 'html.parser')
             results = soup.find('div', {'id': 'cphBody_pnlResults'}).find_all('tr')
-    
+            noathletes = noathletes+1
+   
             for r in results[1:-1]:
                 row = BeautifulSoup(str(r), 'html.parser').find_all('td')
                 ath = athlete(
@@ -57,7 +58,6 @@ def listathletes(request):
                     club = row[6].text,
                     athlete_id = str(row[7]).split('"')[3].split('=')[1]
                 )
-                noathletes = noathletes+1
                 ath.save()
     end = default_timer()
 
