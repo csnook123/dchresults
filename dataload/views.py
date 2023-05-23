@@ -11,7 +11,7 @@ import sqlite3
 def loadathletes(request):
     a = athlete.objects.all()
     a.delete()
-    initialslist = ["a"]
+    initialslist = ["a","b"]
     start = default_timer()
     athleteclub = "Durham City Harriers"
     noathletes = int(0)
@@ -58,12 +58,12 @@ def loadathletes(request):
     end = default_timer()
     return HttpResponse(repr(noathletes) + ' ' + repr(end-start))
 
-
-def loadathletedetails(request):
+def checknumbers(request):
+    db = sqlite3.connect('db.sqlite3')
+    iterator = db.cursor()
+    iterator.execute('select * from dataload_athlete')
     x = 0
-    db = sqlite3.connect(db.sqlite3)
-    
-    for i in athlete.athlete_id():
+    for i in iterator.fetchall():
         x = x+1
-    
+
     return HttpResponse(x)
