@@ -58,7 +58,6 @@ def listathletes(request):
                     athlete_id = str(row[7]).split('"')[3].split('=')[1]
                 )
                 noathletes = noathletes+1
-                print(noathletes)
                 ath.save()
     end = default_timer()
 

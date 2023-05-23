@@ -7,21 +7,20 @@ from timeit import default_timer
 import sqlite3
 
 # Create your views here.
+initialslist = ['a','b','c']
 
 def loadathletes(request):
-    a = athlete.objects.all()
-    a.delete()
-    initialslist = ["a","b"]
     start = default_timer()
+    a = athlete.objects.all()
+    a.delete() 
     athleteclub = "Durham City Harriers"
     noathletes = int(0)
     for x in initialslist:
-        for y in initialslist:            
+        for y in initialslist:    
             i = repr(x)
             j = repr(y)
             '''
-            Saves a list of athletes with any initials to the database.
-
+            Saves a list of athletes associated with DCH to the database.
             Returns:
                     - 'list_of_athletes' (arr): List of athlete data in dict
                         - 'firstname' (str): First name of athlete
@@ -40,8 +39,9 @@ def loadathletes(request):
             html = requests.get(url)
             soup = BeautifulSoup(html.text, 'html.parser')
             results = soup.find('div', {'id': 'cphBody_pnlResults'}).find_all('tr')
-    
+  
             for r in results[1:-1]:
+                noathletes = noathletes+1
                 row = BeautifulSoup(str(r), 'html.parser').find_all('td')
                 ath = athlete(
                     firstname = row[0].text, 
@@ -53,7 +53,6 @@ def loadathletes(request):
                     club = row[6].text,
                     athlete_id = str(row[7]).split('"')[3].split('=')[1]
                 )
-                noathletes = noathletes+1
                 ath.save()
     end = default_timer()
     return HttpResponse(repr(noathletes) + ' ' + repr(end-start))
