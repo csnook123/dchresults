@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import requests
 from bs4 import BeautifulSoup
-from .models import athlete
+from .models import athlete,coaching,ranks,performances,pbs
 from django.http import HttpResponse
 from timeit import default_timer
 import sqlite3
@@ -10,71 +10,196 @@ import sqlite3
 initialslist = ['a','b','c','d','e','f','g','h','i','j','k','l','m'
                 ,'n','o','p','q','r','s','t','u','v','w','x','y','z']
 
+def loadalldata(request):
+    loadathletes('None')
+    '''
+    coachingload(request)
+    personalbests('/personalbests/')
+    performanceload('/performanceload/')
+    rankingsload('/rankingsload/')
+    '''
+    return HttpResponse('/All Data loaded/')
+
 def loadathletes(request):
     start = default_timer()
     a = athlete.objects.all()
     a.delete() 
     athleteclub = "Durham City Harriers"
     noathletes = int(0)
-    '''
-    currently have an issue whereby if a single athlete is returned
-    for a set of initials they are not loaded into the database
-    conversely if we go on first or last initial only we get
-    too many records returned and power of 10 shuts down the connection.
-    trying to handle this in the short term by capturing failed initials
-    '''
+  
     failedinitials = ''
-    for x in initialslist:
-        for y in initialslist:    
-            i = str(x)
+    for y in initialslist:    
             j = str(y)
-            '''
-            Saves a list of athletes associated with DCH to the database.
-            Returns:
-                    - 'list_of_athletes' (arr): List of athlete data in dict
-                        - 'firstname' (str): First name of athlete
-                        - 'surname' (str): Surname of athlete
-                        - 'track' (str): Age group for athlete on track 
-                        - 'road' (str): Age group for athlete on road
-                        - 'sex' (str): Gender of athlete
-                        - 'club' (str): Athletics club of althete
-                        - 'athlete_id' (int): Reference id of athlete (used by PowerOf10)
-            '''
             url = f'https://www.thepowerof10.info/athletes/athleteslookup.aspx?'
             url += f'surname={j.replace(" ","+")}&'
-            url += f'firstname={i.replace(" ","+")}&'
             url += f'club={athleteclub.replace(" ","+")}'
     
             html = requests.get(url)
             soup = BeautifulSoup(html.text, 'html.parser')
             try:
-                results = soup.find('div', {'id': 'cphBody_pnlResults'}).find_all('tr')
-           
+                results = soup.find('div', {'id': 'cphBody_pnlResults'}).find_all('tr')       
                 for r in results[1:-1]:
                     noathletes = noathletes+1
                     row = BeautifulSoup(str(r), 'html.parser').find_all('td')
                     ath = athlete(
-                        firstname = row[0].text, 
-                        surname = row[1].text,
-                        track = row[2].text,
-                        road = row[3].text,
-                        xc = row[4].text,
-                        sex = row[5].text,
-                        club = row[6].text,
-                        athlete_id = str(row[7]).split('"')[3].split('=')[1]
+                            firstname = row[0].text, 
+                            surname = row[1].text,
+                            track = row[2].text,
+                            road = row[3].text,
+                            xc = row[4].text,
+                            sex = row[5].text,
+                            club = row[6].text,
+                            athlete_id = str(row[7]).split('"')[3].split('=')[1]
                     )
                     ath.save()
             except:
-                failedinitials += i + j
+                failedinitials +=' '+ j
     end = default_timer()
     return HttpResponse(repr(noathletes) + ' ' + repr(end-start)+ ' ' + failedinitials)
+
+def coachingload(request):
+    start = default_timer()
+    a = coaching.objects.all()
+    a.delete()
+    for i in athlete.objects.all():
+        try:            
+            urlathlete = f'https://www.thepowerof10.info/athletes/profile.aspx?athleteid='
+            urlathlete += f'{i.athlete_id}'
+            htmlathlete = requests.get(urlathlete)
+            soupathlete = BeautifulSoup(htmlathlete.text, 'html.parser')                
+            coach_dets = soupathlete.find('div', {'id': 'cphBody_pnlAthletesCoached'})
+            if  coach_dets is not None:
+                s = coach_dets.find('table', {'class': 'alternatingrowspanel'}).find_all('tr')
+                for n in s:
+                    dets = n.find_all('td')
+                    if dets[0].text != 'Name':
+                        coach = coaching(
+                            athlete_id = i,
+                            name = dets[0].text,
+                            club = dets[1].text,
+                            age_group = dets[2].text,
+                            sex = dets[3].text,
+                            best_event = dets[4].text,
+                            rank = dets[5].text,
+                            year = dets[7].text,
+                            performance = dets[8].text
+                        )
+                        coach.save()
+        except:
+            ''    
+    end = default_timer()
+    return HttpResponse('CoachingLoaded time taken ' + repr(end-start))
+
+def personalbests(request):
+    start = default_timer()
+    a = pbs.objects.all()
+    a.delete()
+    for i in athlete.objects.all():
+        try:
+            urlathlete = f'https://www.thepowerof10.info/athletes/profile.aspx?athleteid='
+            urlathlete += f'{i.athlete_id}'
+            htmlathlete = requests.get(urlathlete)
+            soupathlete = BeautifulSoup(htmlathlete.text, 'html.parser')                
+            athlete_pb = soupathlete.find('div', {'id': 'cphBody_divBestPerformances'}).find_all('tr')
+            for n in athlete_pb:
+                if n.find('b').text != 'Event':
+                    pb = pbs(
+                        athlete_id = i,
+                        event = n.find('b').text,
+                        value = n.find_all('td')[1].text
+                    )
+                    pb.save()
+        except:
+            ''
+    end = default_timer()           
+    return  HttpResponse('Personal Bests time taken' + repr(end-start))
+
+def performanceload(request):
+    start = default_timer()
+    a = performances.objects.all()
+    a.delete()
+    for i in athlete.objects.all():
+        try:            
+            urlathlete = f'https://www.thepowerof10.info/athletes/profile.aspx?athleteid='
+            urlathlete += f'{i.athlete_id}'
+            htmlathlete = requests.get(urlathlete)
+            soupathlete = BeautifulSoup(htmlathlete.text, 'html.parser')                
+            athlete_perf = soupathlete.find('div', {'id': 'cphBody_pnlPerformances'}).find_all('table')[1].find_all('tr')
+            for n in athlete_perf:
+                if len(n.find_all('td')) > 1 and 'EventPerfPosVenueMeetingDate' != n.text:
+                    dets = n.find_all('td')
+                    perf = performances(
+                        athlete_id = i,
+                        event = dets[0].text,
+                        value = dets[1].text,
+                        position = dets[5].text,
+                        raceid = dets[6].text,
+                        venue = dets[9].text,
+                        meeting = dets[10].text,
+                        date = dets[11].text
+                    )
+                    perf.save()
+        except:
+            ''
+    end = default_timer()
+    return HttpResponse('Performances Saved time taken' + repr(end-start))
+
+def rankingsload(request):
+    start = default_timer()
+    a = ranks.objects.all()
+    a.delete()
+    for i in athlete.objects.all():
+        try: 
+            urlathlete = f'https://www.thepowerof10.info/athletes/profile.aspx?athleteid='
+            urlathlete += f'{i.athlete_id}'
+            htmlathlete = requests.get(urlathlete)
+            soupathlete = BeautifulSoup(htmlathlete.text, 'html.parser')                
+            athlete_rank = soupathlete.find('div', {'id': 'cphBody_pnlMain'}).find('td', {'width': 220, 'valign': 'top'}).find_all('table')
+            if len(athlete_rank) > 2:
+                for n in athlete_rank[2].find_all('tr'):
+                    dets = n.find_all('td')
+                    if dets[0].text != 'Event':
+                        rankings = ranks(
+                            athlete_id = i,
+                            event = dets[0].text,
+                            age_group = dets[2].text,
+                            year = dets[3].text,
+                            rank = dets[4].text
+                        )    
+                        rankings.save()
+        except:
+            ''
+    end = default_timer()
+    return HttpResponse('Rankings Loaded time taken ' + repr(end-start))
 
 def checknumbers(request):
     db = sqlite3.connect('db.sqlite3')
     iterator = db.cursor()
     iterator.execute('select * from dataload_athlete')
-    x = 0
+    a = 0
     for i in iterator.fetchall():
-        x = x+1
+        a = a+1
 
-    return HttpResponse(x)
+    iterator.execute('select * from dataload_coaching')
+    b = 0
+    for i in iterator.fetchall():
+        b = b+1
+
+    iterator.execute('select * from dataload_ranks')
+    c = 0
+    for i in iterator.fetchall():
+        c = c+1
+
+    iterator.execute('select * from dataload_performances')
+    d = 0
+    for i in iterator.fetchall():
+        d = d+1
+
+    iterator.execute('select * from dataload_pbs')
+    e = 0
+    for i in iterator.fetchall():
+        e = e+1
+
+    return HttpResponse('Athletes Loaded ' + str(a) +'<br>Coaching Records Loaded ' 
+                        + str(b) + '<br>Rankings Loaded ' + str(c) + '<br>Performances Loaded '
+                        + str(d) + '<br>PBs Loaded ' + str(e))

@@ -10,19 +10,12 @@ class athlete(models.Model):
     sex = models.CharField(max_length=50,default='')
     club = models.CharField(max_length=50,default='')
     athlete_id = models.IntegerField()
-    gender = models.CharField(max_length=5, default='')
-    age_group = models.CharField(max_length=50,default='')
-    county = models.CharField(max_length=50,default='')
-    region = models.CharField(max_length=50,default='')
-    nation = models.CharField(max_length=50,default='')
-    lead_coach = models.CharField(max_length=50,default='')
-    about = models.CharField(max_length=50,default='')
 
 
 class pbs(models.Model):
     athlete_id = models.ForeignKey(athlete, on_delete=models.CASCADE)
     event = models.CharField(max_length=50,default='')
-    value = models.FloatField(null=True)
+    value = models.CharField(max_length=50,default='')
                         
 
 class performances(models.Model):
@@ -40,8 +33,8 @@ class ranks(models.Model):
     athlete_id = models.ForeignKey(athlete, on_delete=models.CASCADE)
     event = models.CharField(max_length=50,default='')
     age_group = models.CharField(max_length=50,default='')
-    year = models.IntegerField()
-    rank = models.IntegerField()
+    year = models.CharField(max_length=50,default='')
+    rank = models.CharField(max_length=50,default='')
                         
 class coaching(models.Model):
     athlete_id = models.ForeignKey(athlete, on_delete=models.CASCADE)
@@ -50,7 +43,7 @@ class coaching(models.Model):
     age_group = models.CharField(max_length=50,default='')
     sex = models.CharField(max_length=50,default='')
     best_event = models.CharField(max_length=50,default='')
-    rank = models.IntegerField()
+    rank = models.CharField(max_length=50,default='')
     age_group_rank = models.CharField(max_length=50,default='')
-    year = models.IntegerField()
-    performance = models.FloatField(null=True)
+    year = models.CharField(max_length=50,default='')
+    performance = models.CharField(max_length=50,default='')
