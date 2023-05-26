@@ -5,29 +5,37 @@ from django.urls import reverse
 import sqlite3
 import pandas as pd
 
+db = sqlite3.connect('db.sqlite3')
+rankingquery = db.cursor()
+
+#sql = 'select * from dataload_performances'
+#sql = 'select * from dataload_athlete'
+
+sql = 'select event, firstname, surname, performance, meeting, venue, date, Age_Group_Performance'
+sql += ' , club_at_performance from dataload_performances p INNER JOIN dataload_athlete a on '
+sql += 'a.athlete_id = p.athlete_id'
+rankingquery.execute(sql) 
+
+r = pd.DataFrame(rankingquery.fetchall(), columns = [x[0] for x in rankingquery.description])
+
+def make_clickable(val):
+    return f'<a href="{val}">{val}</a>'
 
 # Create your views here.
 def rankings(request,event):
-    db = sqlite3.connect('db.sqlite3')
-    rankingquery = db.cursor()
-    rankingquery.execute('select *  from dataload_performances where dataload_performances.event = "'
-                         + event + '"')
-    e = pd.DataFrame(rankingquery.fetchall())
-    rankingtable = e.to_html
- 
+    s = pd.DataFrame(r,columns=['event','firstname','surname','performance','meeting','venue','date','Age_Group_Performance','club_at_performance'])
+    s = s[s['event'] == event]
+
+    rankingtable = s.to_html()
+    
     return HttpResponse(rankingtable)
 
-
 def index(request):
-    db = sqlite3.connect('db.sqlite3')
-    eventlist = db.cursor()
-    eventlist.execute('select distinct dataload_performances.event  from dataload_performances order by '
-                 + 'dataload_performances.event asc')
-    e = pd.DataFrame(eventlist.fetchall())
 
-    response_data = "<li>Event</li>"
-    for i in range(0,len(e.index)):
-        j = e[0].values[i]
-        i_path = reverse("event-rankings",args=[j])
-        response_data +=f"<li><a href=\"{i_path}\">{j}</a></li>"
-    return HttpResponse(response_data)
+    s = r.groupby(['event'], as_index=False)[['performance']].count()
+    s = s.sort_values(by='performance', ascending=False)
+    for i in range(0,len(s.index)):
+        s['event'][i] = make_clickable(s['event'][i])
+
+    return HttpResponse(s.to_html(render_links=True, escape=False, index=False))
+

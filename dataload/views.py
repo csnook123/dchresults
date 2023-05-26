@@ -7,20 +7,19 @@ from timeit import default_timer
 import sqlite3
 
 # Create your views here.
-initialslist = ['a','b','c','d','e','f','g','h','i','j','k','l','m'
+initialslist = ['a''b','c','d','e','f','g','h','i','j','k','l','m'
                 ,'n','o','p','q','r','s','t','u','v','w','x','y','z']
-
 def loadalldata(request):
-    loadathletes('None')
-    '''
-    coachingload(request)
-    personalbests('/personalbests/')
-    performanceload('/performanceload/')
-    rankingsload('/rankingsload/')
-    '''
-    return HttpResponse('/All Data loaded/')
+    start = default_timer()
+    loadathletes()
+    performanceload()
+    coachingload()
+    personalbests()
+    rankingsload()
+    end = default_timer()
+    return HttpResponse('All Data loaded  '  + repr(end-start))
 
-def loadathletes(request):
+def loadathletes():
     start = default_timer()
     a = athlete.objects.all()
     a.delete() 
@@ -57,14 +56,15 @@ def loadathletes(request):
     end = default_timer()
     return HttpResponse(repr(noathletes) + ' ' + repr(end-start)+ ' ' + failedinitials)
 
-def coachingload(request):
+def coachingload():
     start = default_timer()
     a = coaching.objects.all()
     a.delete()
     for i in athlete.objects.all():
         try:            
+            b = getattr(i,'athlete_id')
             urlathlete = f'https://www.thepowerof10.info/athletes/profile.aspx?athleteid='
-            urlathlete += f'{i.athlete_id}'
+            urlathlete += f'{b}'
             htmlathlete = requests.get(urlathlete)
             soupathlete = BeautifulSoup(htmlathlete.text, 'html.parser')                
             coach_dets = soupathlete.find('div', {'id': 'cphBody_pnlAthletesCoached'})
@@ -74,7 +74,7 @@ def coachingload(request):
                     dets = n.find_all('td')
                     if dets[0].text != 'Name':
                         coach = coaching(
-                            athlete_id = i,
+                            athlete_id = b(),
                             name = dets[0].text,
                             club = dets[1].text,
                             age_group = dets[2].text,
@@ -90,21 +90,22 @@ def coachingload(request):
     end = default_timer()
     return HttpResponse('CoachingLoaded time taken ' + repr(end-start))
 
-def personalbests(request):
+def personalbests():
     start = default_timer()
     a = pbs.objects.all()
     a.delete()
     for i in athlete.objects.all():
         try:
+            b = getattr(i,'athlete_id')
             urlathlete = f'https://www.thepowerof10.info/athletes/profile.aspx?athleteid='
-            urlathlete += f'{i.athlete_id}'
+            urlathlete += f'{b}'
             htmlathlete = requests.get(urlathlete)
             soupathlete = BeautifulSoup(htmlathlete.text, 'html.parser')                
             athlete_pb = soupathlete.find('div', {'id': 'cphBody_divBestPerformances'}).find_all('tr')
             for n in athlete_pb:
                 if n.find('b').text != 'Event':
                     pb = pbs(
-                        athlete_id = i,
+                        athlete_id = b,
                         event = n.find('b').text,
                         value = n.find_all('td')[1].text
                     )
@@ -114,29 +115,35 @@ def personalbests(request):
     end = default_timer()           
     return  HttpResponse('Personal Bests time taken' + repr(end-start))
 
-def performanceload(request):
+def performanceload():
     start = default_timer()
     a = performances.objects.all()
     a.delete()
     for i in athlete.objects.all():
-        try:            
+        try:
+            b = getattr(i,'athlete_id')
             urlathlete = f'https://www.thepowerof10.info/athletes/profile.aspx?athleteid='
-            urlathlete += f'{i.athlete_id}'
+            urlathlete += f'{b}'
             htmlathlete = requests.get(urlathlete)
             soupathlete = BeautifulSoup(htmlathlete.text, 'html.parser')                
             athlete_perf = soupathlete.find('div', {'id': 'cphBody_pnlPerformances'}).find_all('table')[1].find_all('tr')
             for n in athlete_perf:
+                if len(n.find_all('td')) == 1:
+                    dets = n.find_all('td')
+                    clubs = dets[0].text
                 if len(n.find_all('td')) > 1 and 'EventPerfPosVenueMeetingDate' != n.text:
                     dets = n.find_all('td')
                     perf = performances(
-                        athlete_id = i,
+                        athlete_id = b,
                         event = dets[0].text,
-                        value = dets[1].text,
+                        performance = dets[1].text,
                         position = dets[5].text,
                         raceid = dets[6].text,
                         venue = dets[9].text,
                         meeting = dets[10].text,
-                        date = dets[11].text
+                        date = dets[11].text,
+                        club_at_performance = clubs[-6:0],
+                        Age_Group_Performance = clubs[5:8:1]
                     )
                     perf.save()
         except:
@@ -144,14 +151,15 @@ def performanceload(request):
     end = default_timer()
     return HttpResponse('Performances Saved time taken' + repr(end-start))
 
-def rankingsload(request):
+def rankingsload():
     start = default_timer()
     a = ranks.objects.all()
     a.delete()
     for i in athlete.objects.all():
         try: 
+            b = getattr(i,'athlete_id')
             urlathlete = f'https://www.thepowerof10.info/athletes/profile.aspx?athleteid='
-            urlathlete += f'{i.athlete_id}'
+            urlathlete += f'{b}'
             htmlathlete = requests.get(urlathlete)
             soupathlete = BeautifulSoup(htmlathlete.text, 'html.parser')                
             athlete_rank = soupathlete.find('div', {'id': 'cphBody_pnlMain'}).find('td', {'width': 220, 'valign': 'top'}).find_all('table')
@@ -160,7 +168,7 @@ def rankingsload(request):
                     dets = n.find_all('td')
                     if dets[0].text != 'Event':
                         rankings = ranks(
-                            athlete_id = i,
+                            athlete_id = b(),
                             event = dets[0].text,
                             age_group = dets[2].text,
                             year = dets[3].text,
