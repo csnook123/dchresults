@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<link rel="stylesheet" type="text/css" href"{% static 'css/style.css' %}/>
+    <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<h1>Durham City Harriers - Results and Records Pages</h1>
+<div class="navbar">
+    <a href="#home">Home</a>
+    <a href="#news">News</a>
+    <div class="dropdown">
+      <button class="dropbtn">Dropdown
+        <i class="fa fa-caret-down"></i>
+      </button>
+      <div class="dropdown-content">
+        <a href="#">Link 1</a>
+        <a href="#">Link 2</a>
+        <a href="#">Link 3</a>
+      </div>
+    </div>
+  </div>
+
+<body>
+    <h2><a href="ranking">Club Rankings</a></h3>
+    <h3>Link to a page listing events by numbers of performances
+        Table has links onwards to listings of top 10 performances by event and year
+        also to best performance by year. 
+    </h3>
+
+    <h2><a href="league_charts/1">League Results</a></h2>
+    <h3>Initial link is to a table showing number of points accumulated by athlete for each match</h3>
+
+    <h2><a href="dataload/checknumbers">Data Collection</a></h2>
+    <h3>Link to pages for collecting different items of data from Power of 10 website. 
+        Currently set up to extract:
+            A list of athletes, performances, personal bests, rankings, matchs and match results. 
+    </h3>
+
+    <h2><a href="suggestions">Suggestions</a></h2>
+    <h3>Link to a page for making suggestions about how this results page could be improved</h3>
+</body>
+</html>

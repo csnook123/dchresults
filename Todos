@@ -1,7 +1,16 @@
 
 Enabling sorting in event rankings tables
+Classification of events for lower/higher = better for times
 Selecting only the Top X performances
 Forms to enable filtering
 Forms for individual athletes
-NAL Results
-NAL points calculations. 
+NAL local points calculations (reflecting B string v A string). 
+Matplotlib charts for rankings history
+Models created for Results storage
+List of Results function for loading results
+Forms for entering results. 
+which events did people get the most points in? 
+
+
+
+
