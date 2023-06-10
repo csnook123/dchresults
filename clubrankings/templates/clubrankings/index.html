@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
-<link rel="stylesheet" type="text/css" href"{% static 'css/style.css' %}/>
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
 <script src="{% static 'js/script.js' %}"></script>
 
     <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Durham City Harriers</title>
 </head>
-<h1>Durham City Harriers - Results and Records Pages</h1>
+<img height = "100px" src="{% static 'media/clublogo.jpg' %}" alt="clublogo">
+  <img height = "100px" src="{% static 'media/clubname.jpg' %}" alt="clubname">
 
 <nav id='menu'>
   <input type='checkbox' id='responsive-menu' onclick='updatemenu()'><label></label>
@@ -69,22 +70,17 @@
 
 
 <body>
-    <h2><a href="ranking">Club Rankings</a></h3>
-    <h3>Link to a page listing events by numbers of performances
-        Table has links onwards to listings of top 10 performances by event and year
-        also to best performance by year. 
-    </h3>
 
-    <h2><a href="league_charts/1">League Results</a></h2>
-    <h3>Initial link is to a table showing number of points accumulated by athlete for each match</h3>
-
-    <h2><a href="dataload/checknumbers">Data Collection</a></h2>
-    <h3>Link to pages for collecting different items of data from Power of 10 website. 
-        Currently set up to extract:
-            A list of athletes, performances, personal bests, rankings, matchs and match results. 
-    </h3>
-
-    <h2><a href="suggestions">Suggestions</a></h2>
-    <h3>Link to a page for making suggestions about how this results page could be improved</h3>
+  <div class="grid-container">
+    <div class="item1">Latest News Here</div>
+    <div class="item2">Statistics Slider Here</div>
+    <div class="item3">Twitter Feed Here</div>  
+    <div class="item4">Main Content of the page here</div>
+    <div class="item5">Club Kit Marketing here</div>
+    <div class="item6">Instagram Feed Here</div>
+    <div class="item7">Intro to Latest Blog Here</div>
+    <div class="item8">general inforamtion</div>
+  </div>
+  
 </body>
 </html>

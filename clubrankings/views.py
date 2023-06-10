@@ -7,6 +7,10 @@ import pandas as pd
 
 # Create your views here.
 
+# Image of Club logo and text at the top
+# Divisions in the page to hold views from python
+# Tables to have black and orange alternating stripes with white text
+
 def index(request):
     return render(request, 'clubrankings/index.html')
 
