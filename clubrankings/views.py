@@ -4,7 +4,6 @@ from django.http import HttpResponse
 from django.urls import reverse
 import sqlite3
 import pandas as pd
-import matplotlib as mpl
 
 # Create your views here.
 
@@ -41,10 +40,6 @@ def league_frame2():
     return t
 
 
-def event_type():
-    field = [
-
-    ]
 
 def rankingframe():
     db = sqlite3.connect('db.sqlite3')

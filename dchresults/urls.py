@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('dataload/', include("dataload.urls")),
     path('clubrankings/', include("clubrankings.urls")),
+    path('', include("clubrankings.urls")),
 
 ]
