@@ -1,125 +1,40 @@
 /* Navbar container */
-#menu {
-	background: #FFA500;
-	color: #FFF;
-	height: 45px;
-	padding-left: 18px;
-	border-radius: 10px;
-}
-#menu ul, #menu li {
-	margin: 0 auto;
-	padding: 0;
-	list-style: none
-}
-#menu ul {
-	width: 100%;
-}
-#menu li {
-	float: left;
-	display: inline;
-	position: relative;
-}
-#menu a {
-	display: inline;
-	line-height: 45px;
-	padding: 0 14px;
-	text-decoration: none;
-	color: #0A0A0A;
-	font-size: 16px;
-}
-#menu a.dropdown-arrow:after {
-	content: "\25BE";
-	margin-left: 5px;
-}
-#menu li a:hover {
-	color: #0099CC;
-	background: #F2F2F2;
-}
-#menu input {
-	display: none;
-	margin: 0;
-	padding: 0;
-	height: 45px;
-	width: 100%;
-	opacity: 0;
-	cursor: pointer
-}
-#menu label {
-	display: none;
-	line-height: 45px;
-	text-align: center;
-	position: relative;
-	left: 35px
-}
-#menu label:before {
-	font-size: 1.6em;
-	content: "\2261";
-	margin-left: 20px;
-}
-#menu ul.sub-menus{
-	height: auto;
-	overflow: hidden;
-	width: 300%;
-	background: #00ff15;
-	position:fixed;
-	z-index: 99;
-	display: none;
-}
-#menu ul.sub-menus li {
-	display: inline;
-	width: 100%;
-}
-#menu ul.sub-menus a {
-	color: #1C1C1C;
-	font-size: 24px;
-}
-#menu li:hover ul.sub-menus {
-	display: inline
-}
-#menu ul.sub-menus a:hover{
-	background: #F2F2F2;
-	color: #444444;
-}
-@media screen and (max-width: 800px){
-	#menu {position:relative}
-	#menu ul {background:#111;position:relative;top:100%;right:0;left:0;z-index:3;height:auto;display:none}
-	#menu ul.sub-menus {width:100%;position:absolute;}
-	#menu ul.sub-menus a {padding-left:30px;}
-	#menu li {display:inline;float:none;width:auto;}
-	#menu input, #menu label {position:relative;top:0;left:0;display:inline}
-	#menu input {z-index:4}
-	#menu input:checked + label {color:white}
-	#menu input:checked + label:before {content:"\00d7"}
-	#menu input:checked ~ ul {display:inline}
-}
 
-.item1 { grid-area: topleft; }
-.item2 { grid-area: midleft; }
-.item3 { grid-area: bottomleft; }
-.item4 { grid-area: centre; }
-.item5 { grid-area: topright; }
-.item6 { grid-area: midright; }
-.item7 { grid-area: bottomright; }
-.item8 { grid-area: footer; }
+ .navbar-custom .navbar-brand .navbar-nav .dropdown .dropdown-menu {
+    background-color: orange;
+  }
 
-.grid-container {
-  display: grid;
-  grid-template-areas:
-    'topleft centre centre topright'
-    'midleft centre centre midright'
-    'bottomleft centre centre bottomright'
-	'footer footer footer footer';
-  gap: 10px;
-  background-color: #ffa60000;
-  padding: 10px;
-}
 
-.grid-container > div {
-  background-color: rgba(10, 10, 8, 0.8);
-  color: #FFF;
-  text-align:start;
-  padding: 20px 0;
-  font-size: 12px;
-}
+
+
+
+    .row.content {height: 450px}
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      padding-top: 20px;
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+
+    /* Set black background color, white text and some padding */
+    footer {
+      background-color: #555;
+      color: white;
+      padding: 15px;
+    }
+
+    /* On small screens, set height to 'auto' for sidenav and grid */
+    @media screen and (max-width: 767px) {
+      .sidenav {
+        height: auto;
+        padding: 15px;
+      }
+      .row.content {height:auto;}
+    }
+
+
+
+
 
   
