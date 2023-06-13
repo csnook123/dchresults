@@ -41,9 +41,3 @@ def event_scoring(variables):
     #Potentially further events to score.
     score = 0
     return score
-
-def db_conn_to_df(sql):
-    #function to receive a sql statement and return it to a dataframe.
-    dataframe =''
-    return dataframe
-

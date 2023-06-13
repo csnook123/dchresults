@@ -1,7 +1,8 @@
 /* Navbar container */
 
- .navbar-custom .navbar-brand .navbar-nav .dropdown .dropdown-menu {
-    background-color: orange;
+ .navbar-custom a {
+    background-color: #ffa050;
+    color: white;
   }
 
 
@@ -13,13 +14,14 @@
     /* Set gray background color and 100% height */
     .sidenav {
       padding-top: 20px;
-      background-color: #f1f1f1;
+      background-color: #ffa050;
       height: 100%;
+      color: white;
     }
 
     /* Set black background color, white text and some padding */
     footer {
-      background-color: #555;
+      background-color: #ffa050;
       color: white;
       padding: 15px;
     }
