@@ -38,7 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dataload',
-    'clubrankings'
+    'clubrankings',
+    'dchblog',
+    'dchcalendar',
+    'twitterfeed',
+    'instagramfeed',
+    'twitter_feed',
 ]
 
 MIDDLEWARE = [
@@ -53,11 +58,16 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'dchresults.urls'
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            # BASE_DIR / "clubrankings" / "templates"
+            BASE_DIR / "clubrankings" / "templates" / "clubrankings",
+            BASE_DIR / "dchblog" / "templates" / "dchblog",
+            BASE_DIR / "dchcalendar" / "templates" / "dchcalendar",
+            BASE_DIR / "instagramfeed" / "templates" / "instagramfeed"
+        
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -128,3 +138,4 @@ STATIC_DIRS = (
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

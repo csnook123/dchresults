@@ -29,7 +29,10 @@ class performances(models.Model):
     meeting = models.CharField(max_length=50,default='')
     date = models.DateField(default='',null=False)
     club_at_performance = models.CharField(max_length=50,default='')
-    Age_Group_Performance = models.CharField(max_length=50,default='')                    
+    Age_Group_Performance = models.CharField(max_length=50,default='')   
+    event_group = models.CharField(max_length=50,default='')
+    event_type = models.CharField(max_length=50,default='')
+    year =  models.CharField(max_length=50,default='')
 
 class ranks(models.Model):
     athlete_id = models.CharField(max_length=50,default='')
@@ -56,6 +59,8 @@ class meets(models.Model):
     venue = models.CharField(max_length=50,default='')
     type = models.CharField(max_length=50,default='')
     meeting_id = models.CharField(max_length=50,default='')
+    year =  models.CharField(max_length=50,default='')
+
 
 class results(models.Model):
     meeting_id = models.CharField(max_length=50,default='')
@@ -70,4 +75,5 @@ class results(models.Model):
     club = models.CharField(max_length=50,default='')
     points = models.IntegerField(default=0)
     athlete_id = models.CharField(max_length=50,default='')
+    event_group = models.CharField(max_length=50,default='')
     

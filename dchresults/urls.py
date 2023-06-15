@@ -21,6 +21,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('dataload/', include("dataload.urls")),
     path('clubrankings/', include("clubrankings.urls")),
-    path('', include("clubrankings.urls")),
+ #   path('', include("clubrankings.urls")),
+    path('dchcalendar/', include("dchcalendar.urls")),
+    path('dchblog/', include("dchblog.urls")),
+    path('instagramfeed/', include("instagramfeed.urls")),
+    path('twitterfeed/', include("twitterfeed.urls")),
 
 ]
