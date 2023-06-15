@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from  .functions import *
 from django.shortcuts import render
 from .forms import *
 from pandas import DataFrame
@@ -14,7 +13,7 @@ def rankingframe():
     sql = 'select event, a.name as name, performance, sex,meeting, venue, date, Age_Group_Performance'
     sql += ' , club_at_performance,year,event_group, event_type from dataload_performances p INNER JOIN dataload_athlete a on '
     sql += 'a.athlete_id = p.athlete_id ' 
-    sql += 'where club_at_performance = "Durham"'
+ #   sql += 'where club_at_performance = "Durham"'
     rankingquery.execute(sql) 
     r = pd.DataFrame(rankingquery.fetchall(), columns = [x[0] for x in rankingquery.description])
     
@@ -209,6 +208,33 @@ def profile(request,id):
     return render(request, "clubrankings/athlete_profile.html", context)
 
 
-def chart(request,num):
+def charts(request,num):
+        #Code to generate a form to input values and Get Options to a URL to be used as variables
+    context ={}
+    Age_Group = request.GET.get('Age_Group')
+    Event_Group = request.GET.get('Event_Group')
+    Year = request.GET.get('Year')
+    Event = request.GET.get('Event')
+    Gender = request.GET.get('Gender')
+    League = request.GET.get('League')
+    League_Date = request.GET.get('League_Date')
+    Results_View = request.GET.get('Results_View')
+    #athlete_id = request.Get.get('id')
+
+    form = Results_Filter(initial={
+        'Age_Group' : Age_Group,
+        'Event_Group' : Event_Group,
+        'Year' : Year,
+        'Event': Event,
+        'Gender': Gender,
+        'League': League,
+        'League_Date': League_Date,
+        'Results_View': Results_View
+    })
+
+    context['form']= form
+
     if num == '1':
-        return ''
+        r = rankingframe()
+        context['output'] = r.to_html()
+    return render(request, "clubrankings/form.html", context)

@@ -704,7 +704,7 @@ def performanceload(request):
                         venue = dets[9].text,
                         meeting = dets[10].text,
                         date = dateformatting,
-                        club_at_performance = check,
+                        club_at_performance = clubs[9:15:1],
                         Age_Group_Performance = agp,
                         event_group = et,
                         event_type = eg,
