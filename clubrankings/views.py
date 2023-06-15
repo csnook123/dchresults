@@ -2,8 +2,7 @@ from django.shortcuts import render
 from .forms import *
 from pandas import DataFrame
 import dataload.views as dl
-from bokeh.plotting import figure, show,save,output_file
-from bokeh.resources import CDN
+from bokeh.plotting import figure
 from bokeh.embed import components
 
 def make_clickable(id,val):
