@@ -1,8 +1,10 @@
 from django.shortcuts import render
-from django.shortcuts import render
 from .forms import *
 from pandas import DataFrame
 import dataload.views as dl
+from bokeh.plotting import figure, show,save,output_file
+from bokeh.resources import CDN
+from bokeh.embed import components
 
 def make_clickable(id,val):
     return f'<a href={id}>{val}</a>'
@@ -236,5 +238,18 @@ def charts(request,num):
 
     if num == '1':
         r = rankingframe()
+        r = r.groupby(['event'], as_index=False).agg(
+        Performances = ('performance','count'))
+        r = r.sort_values(['Performances'], ascending=False).head(20)
         context['output'] = r.to_html()
-    return render(request, "clubrankings/form.html", context)
+
+        Events = r['event']
+        Performances = r['Performances']
+        p = figure(x_range=Events, height=350, title="Top 20 Events by Performance",
+           toolbar_location=None, tools="")
+        p.vbar(x=Events, top=Performances, width=0.9)
+        p.xgrid.grid_line_color = None
+        p.y_range.start = 0
+        script, div = components(p)
+    
+    return render(request, 'clubrankings/bokeh.html',  {'script': script, 'div': div})
