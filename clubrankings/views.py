@@ -14,7 +14,7 @@ def rankingframe():
     sql = 'select event, a.name as name, performance, sex,meeting, venue, date, Age_Group_Performance'
     sql += ' , club_at_performance,year,event_group, event_type from dataload_performances p INNER JOIN dataload_athlete a on '
     sql += 'a.athlete_id = p.athlete_id ' 
-    sql += 'where club_at_performance LIKE "%Durham%"'
+    sql += 'where club_at_performance = "Durham"'
     rankingquery.execute(sql) 
     r = pd.DataFrame(rankingquery.fetchall(), columns = [x[0] for x in rankingquery.description])
     
@@ -207,3 +207,8 @@ def profile(request,id):
     context['guide3'] = ''
     context['output3'] = ''
     return render(request, "clubrankings/athlete_profile.html", context)
+
+
+def chart(request,num):
+    if num == '1':
+        return ''
