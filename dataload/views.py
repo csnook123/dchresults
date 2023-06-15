@@ -683,9 +683,9 @@ def performanceload(request):
                     dets = n.find_all('td')
                     clubs = dets[0].text
                     agp = clubs[5:8:1]
-                if clubs[9,14:1] == 'Durham':
-                    clubs = 'Durham'
-                else: clubs = 'Not Durham'    
+                    if clubs[9:14:1] == 'Durham':
+                        check = 'Durham'
+                    else: check = 'Not Durham'    
                 if len(n.find_all('td')) > 1 and 'EventPerfPosVenueMeetingDate' != n.text:
                     dets = n.find_all('td')
                     for item in eventcategorisation: 
@@ -704,7 +704,7 @@ def performanceload(request):
                         venue = dets[9].text,
                         meeting = dets[10].text,
                         date = dateformatting,
-                        club_at_performance = clubs,
+                        club_at_performance = check,
                         Age_Group_Performance = agp,
                         event_group = et,
                         event_type = eg,
