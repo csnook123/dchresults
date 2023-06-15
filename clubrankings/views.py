@@ -272,4 +272,5 @@ def charts(request,num):
         script, div = components(p)
 
 
+
     return render(request, 'clubrankings/bokeh.html',  {'form': form, 'script': script, 'div': div})
