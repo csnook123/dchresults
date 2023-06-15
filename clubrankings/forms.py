@@ -16,7 +16,6 @@ def event():
     r = r.sort_values('event')
     r.loc[-1] = ['All','All']  # adding a row
     r.index = r.index + 1  # shifting index
-    r =r.sort_index()
 
     event = tuple(r.itertuples(index=False, name=None))
     return event
@@ -32,7 +31,6 @@ def year():
     r = r.sort_values('year')
     r.loc[-1] = ['All','All']  # adding a row
     r.index = r.index + 1  # shifting index
-    r =r.sort_index()
     event = tuple(r.itertuples(index=False, name=None))
     return event
 
@@ -47,7 +45,6 @@ def event_group():
     r = r.sort_values('event_group')
     r.loc[-1] = ['All','All']  # adding a row
     r.index = r.index + 1  # shifting index
-    r =r.sort_index()
     event = tuple(r.itertuples(index=False, name=None))
     return event
 
@@ -62,7 +59,6 @@ def age_group():
     r = r.sort_values('Age_Group_Performance')
     r.loc[-1] = ['All','All']  # adding a row
     r.index = r.index + 1  # shifting index
-    r =r.sort_index()
     event = tuple(r.itertuples(index=False, name=None))
     return event
 
@@ -88,7 +84,6 @@ def League_Date():
     r = r.sort_values('date')
     r.loc[-1] = ['All','All']  # adding a row
     r.index = r.index + 1  # shifting index
-    r = r.sort_index()
     event = tuple(r.itertuples(index=False, name=None))
     return event
 
@@ -99,6 +94,13 @@ ResultsView = [
         ('Total League Points',u'Total League Points'),
         ('League Tables',u'League Tables'),
 
+]
+
+ChartsView = [
+        ('Top 20 Events by Number of Performances',u'Top 20 Events by Number of Performances'),
+        ('Top 100 Performances',u'Top 100 Performances'),
+        ('Total League Points',u'Total League Points'),
+        ('League Tables',u'League Tables')
 ]
 class Results_Filter(forms.Form):
          # each field would be mapped as an input field in HTML
@@ -111,4 +113,14 @@ class Results_Filter(forms.Form):
         League_Date = forms.ChoiceField(choices=League_Date)
         Results_View = forms.ChoiceField(choices=ResultsView)
 
+class Charts_Filter(forms.Form):
+         # each field would be mapped as an input field in HTML
+        Age_Group = forms.ChoiceField(choices=age_group())
+        Event_Group = forms.ChoiceField(choices=event_group())
+        Year = forms.ChoiceField(choices=year())
+        Event = forms.ChoiceField(choices=event())
+        Gender = forms.ChoiceField(choices=Gender)
+        League = forms.ChoiceField(choices=League)
+        League_Date = forms.ChoiceField(choices=League_Date)
+        Results_View = forms.ChoiceField(choices=ResultsView)
 

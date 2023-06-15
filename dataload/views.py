@@ -688,10 +688,6 @@ def performanceload(request):
                     else: check = 'Not Durham'    
                 if len(n.find_all('td')) > 1 and 'EventPerfPosVenueMeetingDate' != n.text:
                     dets = n.find_all('td')
-                    for item in eventcategorisation: 
-                        if item[0] == dets[0].text:
-                            eg = item[1]
-                            et = item[2]
                     dateformatting = dets[11].text
                     dateformatting = datetime.strptime(dateformatting, "%d %b %y")
                     yr1 = dateformatting.year
@@ -706,8 +702,8 @@ def performanceload(request):
                         date = dateformatting,
                         club_at_performance = check,
                         Age_Group_Performance = agp,
-                        event_group = et,
-                        event_type = eg,
+                        event_group = geteventgroup(dets[0].text),
+                        event_type = geteventgroup(dets[0].text),
                         year = yr1
                     )
                     perf.save()

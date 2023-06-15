@@ -15,7 +15,7 @@ def rankingframe():
     sql = 'select event, a.name as name, performance, sex,meeting, venue, date, Age_Group_Performance'
     sql += ' , club_at_performance,year,event_group, event_type from dataload_performances p INNER JOIN dataload_athlete a on '
     sql += 'a.athlete_id = p.athlete_id ' 
- #   sql += 'where club_at_performance = "Durham"'
+    sql += 'where club_at_performance = "Durham"'
     rankingquery.execute(sql) 
     r = pd.DataFrame(rankingquery.fetchall(), columns = [x[0] for x in rankingquery.description])
     
@@ -48,6 +48,36 @@ def league_table():
     t = league_query.execute(sql)
     t = pd.DataFrame(t.fetchall(), columns = [x[0] for x in t.description])
     return t
+
+def filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event):
+        if Year != "All":
+            t = t[t['year'] == Year]
+        if Gender != "All":
+            t = t[t['sex'] == Gender]
+        if Age_Group != "All":
+            t = t[t['Age_Group_Performance'] == Age_Group]
+        if Event_Group != "All":
+            t = t[t['event_group'] == Event_Group]
+        if Event != "All":
+            t = t[t['event'] == Event]
+        return t
+
+def filter_league_frame(t,Year,Gender,Age_Group,Event_Group,Event,League,League_Date):
+    if Year != "All":
+        t = t[t['year'] == Year]
+    if Gender != "All":
+        t = t[t['gender'] == Gender]
+    if Age_Group != "All":
+        t = t[t['age_group'] == Age_Group]
+    if Event_Group != "All":
+        t = t[t['event_group'] == Event_Group]
+    if Event != "All":
+        t = t[t['event'] == Event]
+    if League != "All":
+        t = t[t['meeting'] == League]
+    if League_Date != "All":
+        t = t[t['event'] == League_Date]
+        return t
 
 
 # Create your views here.
@@ -89,16 +119,7 @@ def form_view(request,*args):
                                 'date','year','event_group','Age_Group_Performance',
                                 'club_at_performance'])
 
-        if Year != "All":
-            t = t[t['year'] == Year]
-        if Gender != "All":
-            t = t[t['sex'] == Gender]
-        if Age_Group != "All":
-            t = t[t['Age_Group_Performance'] == Age_Group]
-        if Event_Group != "All":
-            t = t[t['event_group'] == Event_Group]
-        if Event != "All":
-            t = t[t['event'] == Event]
+        t = filter_ranking_frame(t, Year,Gender,Age_Group,Event_Group,Event)
         if dl.geteventgroup(Event) in ('Throws','Jumps','Combined Events'):
             try:
                 t['performance'] = t['performance'].astype(float)
@@ -118,17 +139,7 @@ def form_view(request,*args):
                                 'date','year','event_group','Age_Group_Performance',
                                 'club_at_performance'])
 
-        if Year != "All":
-            t = t[t['year'] == Year]
-        if Gender != "All":
-            t = t[t['sex'] == Gender]
-        if Age_Group != "All":
-            t = t[t['Age_Group_Performance'] == Age_Group]
-        if Event_Group != "All":
-            t = t[t['event_group'] == Event_Group]
-        if Event != "All":
-            t = t[t['event'] == Event]
-
+        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event)
         
         #Events where high is good
         options = ('Throws','Jumps','Combined Events')
@@ -148,21 +159,7 @@ def form_view(request,*args):
         context['guide'] += " event, with the option to filter by year, date of match/event group etc. "
         
         t = league_frame()
-        if Year != "All":
-            t = t[t['year'] == Year]
-        if Gender != "All":
-            t = t[t['gender'] == Gender]
-        if Age_Group != "All":
-            t = t[t['age_group'] == Age_Group]
-        if Event_Group != "All":
-            t = t[t['event_group'] == Event_Group]
-        if Event != "All":
-            t = t[t['event'] == Event]
-        if League != "All":
-            t = t[t['meeting'] == League]
-        if League_Date != "All":
-            t = t[t['event'] == League_Date]
-
+        t = filter_league_frame(t,Year,Gender,Age_Group,Event_Group,Event,League,League_Date)
 
         t = t.groupby(['athlete_id','name','event_group'], as_index=False).agg(
                 TotalPoints = ('points','sum'),
@@ -223,7 +220,7 @@ def charts(request,num):
     Results_View = request.GET.get('Results_View')
     #athlete_id = request.Get.get('id')
 
-    form = Results_Filter(initial={
+    form = Charts_Filter(initial={
         'Age_Group' : Age_Group,
         'Event_Group' : Event_Group,
         'Year' : Year,
@@ -234,22 +231,45 @@ def charts(request,num):
         'Results_View': Results_View
     })
 
-    context['form']= form
 
     if num == '1':
-        r = rankingframe()
-        r = r.groupby(['event'], as_index=False).agg(
+        t = rankingframe()
+        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event)
+
+
+        r = t.groupby(['event'], as_index=False).agg(
         Performances = ('performance','count'))
         r = r.sort_values(['Performances'], ascending=False).head(20)
-        context['output'] = r.to_html()
 
-        Events = r['event']
-        Performances = r['Performances']
-        p = figure(x_range=Events, height=350, title="Top 20 Events by Performance",
+        Events = r['event'].to_list()
+        Performances = r['Performances'].to_list()
+        p = figure(x_range=Events, height=350, title="Top 20 Events by Number of Performances",
            toolbar_location=None, tools="")
         p.vbar(x=Events, top=Performances, width=0.9)
         p.xgrid.grid_line_color = None
         p.y_range.start = 0
         script, div = components(p)
     
-    return render(request, 'clubrankings/bokeh.html',  {'script': script, 'div': div})
+    if num == '2':
+        t = rankingframe()
+        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event)
+
+        if Event_Group in ('Throws','Jumps','Combined Events'):
+            r = t.groupby(['year'], as_index=False).agg(
+            BestPerformance = ('performance','max'))
+        else:
+            r = t.groupby(['year'], as_index=False).agg(
+            BestPerformance = ('performance','min'))
+
+        Year = r['year'].to_list()
+        BestPerformances = r['BestPerformance'].to_list()
+
+        p = figure(x_range=Year, height=350, title="Best Performance in the club each year",
+           toolbar_location=None, tools="")
+        p.vbar(x=Year, top=BestPerformances, width=0.9)
+        p.xgrid.grid_line_color = None
+        p.y_range.start = 0
+        script, div = components(p)
+
+
+    return render(request, 'clubrankings/bokeh.html',  {'form': form, 'script': script, 'div': div})
