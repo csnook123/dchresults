@@ -93,6 +93,7 @@ ResultsView = [
         ('Top 100 Performances',u'Top 100 Performances'),
         ('Total League Points',u'Total League Points'),
         ('League Tables',u'League Tables'),
+        ('Top 30 Athletes',u'Top 30 Athletes')
 
 ]
 

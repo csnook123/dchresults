@@ -4,6 +4,7 @@ from pandas import DataFrame
 import dataload.views as dl
 from bokeh.plotting import figure
 from bokeh.embed import components
+import datetime
 
 def make_clickable(id,val):
     return f'<a href={id}>{val}</a>'
@@ -152,6 +153,40 @@ def form_view(request,*args):
         r =  pd.concat((s,u))
         context['output'] = r.to_html()
 
+    if Results_View == 'Top 30 Athletes':
+        context['guide'] = 'The aim of this view is to show the best athletes in events '
+        context['guide'] = 'according to their single best performance in a category '
+        context['guide'] = 'it can be filtered by year, gender, age group, event or event group '
+
+        t = pd.DataFrame(rankingframe(), 
+                     columns = ['name','sex','venue','event','performance',
+                                'date','year','event_group','Age_Group_Performance',
+                                'club_at_performance'])
+
+        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event)
+        
+        #Events where high is good
+        options = ('Throws','Jumps','Combined Events')
+        s = t[t['event_group'].isin(options)]
+        try:
+            s['performance'] = s['performance'].astype(float)
+        except:''                
+        s = s.groupby(['event','name'], as_index=False).agg(
+                Athlete_Best_Performance = ('performance','max'))
+        s = s.sort_values('Athlete_Best_Performance', ascending=[False]).head(30)
+        s['Rank'] = s.sort_values(by=['Athlete_Best_Performance'], ascending=False).reset_index().index + 1
+        #Events where low is good
+        options = ('Barriers','Cross Country','Endurance','Running - Various', 'Running - Standard', 'Sprint')
+        u = t[t['event_group'].isin(options)]
+        u = u.groupby(['event','name'], as_index=False).agg(
+                Athlete_Best_Performance = ('performance','min'))
+        u = u.sort_values('Athlete_Best_Performance').head(30)
+        u['Rank'] = u.sort_values(by=['Athlete_Best_Performance']).reset_index().index + 1
+        
+        r =  pd.concat((s,u))
+        context['output'] = r.to_html()
+
+
     if Results_View == 'Total League Points':
         context['guide'] = "The aim of this view is to show the total points accumulated for the team"
         context['guide'] += " by each DCH athlete alongside the number of events and average points per"
@@ -259,11 +294,15 @@ def charts(request,num):
         else:
             r = t.groupby(['year'], as_index=False).agg(
             BestPerformance = ('performance','min'))
-
+            for i in [0,len(r)]:
+                    for fmt in ('%H:%M', '%H:%M:%S', '%H:%M.%S'):
+                        try:
+                            r['BestPerformance'][i] = datetime.datetime.strptime('02:12',fmt)
+                        except:''
         Year = r['year'].to_list()
         BestPerformances = r['BestPerformance'].to_list()
 
-        p = figure(x_range=Year, height=350, title="Best Performance in the club each year",
+        p = figure(x_range=Year, width=750, height=350, title="Best Performance in the club each year",
            toolbar_location=None, tools="")
         p.vbar(x=Year, top=BestPerformances, width=0.9)
         p.xgrid.grid_line_color = None
