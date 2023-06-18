@@ -33,6 +33,7 @@ class performances(models.Model):
     event_group = models.CharField(max_length=50,default='')
     event_type = models.CharField(max_length=50,default='')
     year =  models.CharField(max_length=50,default='')
+    XCSeason =  models.CharField(max_length=50,default='')
 
 class ranks(models.Model):
     athlete_id = models.CharField(max_length=50,default='')

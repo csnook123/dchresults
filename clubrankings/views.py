@@ -15,7 +15,7 @@ def rankingframe():
     db = sqlite3.connect('db.sqlite3')
     rankingquery = db.cursor()
     sql = 'select event, position, 1001 - position as Harrier_League_Points, a.name as name, performance, sex,meeting, venue, date, Age_Group_Performance'
-    sql += ' , club_at_performance,year,event_group, event_type from dataload_performances p INNER JOIN dataload_athlete a on '
+    sql += ' , club_at_performance,year,event_group, a.athlete_id, event_type,XCSeason from dataload_performances p INNER JOIN dataload_athlete a on '
     sql += 'a.athlete_id = p.athlete_id ' 
     sql += 'where club_at_performance = "Durham"'
     rankingquery.execute(sql) 
@@ -51,7 +51,7 @@ def league_table():
     t = pd.DataFrame(t.fetchall(), columns = [x[0] for x in t.description])
     return t
 
-def filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event):
+def filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event,XCSeason):
         if Year != "All":
             t = t[t['year'] == Year]
         if Gender != "All":
@@ -62,6 +62,8 @@ def filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event):
             t = t[t['event_group'] == Event_Group]
         if Event != "All":
             t = t[t['event'] == Event]
+        if XCSeason != "All":
+            t = t[t['XCSeason'] == XCSeason]
         return t
 
 def filter_league_frame(t,Year,Gender,Age_Group,Event_Group,Event,League,League_Date,Clubs):
@@ -96,6 +98,7 @@ def form_view(request,*args):
     Gender = request.GET.get('Gender')
     League = request.GET.get('League')
     League_Date = request.GET.get('League_Date')
+    XCSeason = request.GET.get('XCSeason')
     Clubs = request.GET.get('ShowAllClubs')
     Results_View = request.GET.get('Results_View')
     
@@ -108,6 +111,7 @@ def form_view(request,*args):
         'League': League,
         'League_Date': League_Date,
         'ShowAllClubs': Clubs,
+        'XCSeason': XCSeason,
         'Results_View': Results_View
     })
 
@@ -258,14 +262,16 @@ def form_view(request,*args):
         context['guide'] += " by season "
            
         r = rankingframe()
-        r = filter_ranking_frame(r,Year,Gender,Age_Group,Event_Group,Event)
+        r = filter_ranking_frame(r,Year,Gender,Age_Group,Event_Group,Event,XCSeason)
         r = r[r['meeting'] == 	'Start Fitness North Eastern Harrier League']
-        r = r.groupby(['name','Age_Group_Performance'], as_index=False).agg(
+        r = r.groupby(['athlete_id','name'], as_index=False).agg(
                 TotalPoints = ('Harrier_League_Points','sum'),
                 TotalEvents = ('Harrier_League_Points','count'),
                 AveragePoints = ('Harrier_League_Points','mean'))        
         r = r.sort_values(by='TotalPoints', ascending=False)
-        context['output'] = r.to_html()
+        for i in range(0,len(r.index)):
+            r['name'][i] = make_clickable(r['athlete_id'][i],r['name'][i])        
+        context['output'] = r.to_html(render_links=True,escape=False,index=False)
 
 
     #if athlete_id !='':

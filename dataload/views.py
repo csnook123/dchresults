@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from .models import athlete,coaching,ranks,performances,pbs,meets,results
 from django.http import HttpResponse
 from timeit import default_timer
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlite3
 
 # Create your views here.
@@ -691,7 +691,9 @@ def performanceload(request):
                     dets = n.find_all('td')
                     dateformatting = dets[11].text
                     dateformatting = datetime.strptime(dateformatting, "%d %b %y")
+                    xcdate = dateformatting - timedelta(180)
                     yr1 = dateformatting.year
+                    xcdate = xcdate.year
                     perf = performances(
                         athlete_id = b,
                         event = dets[0].text,
@@ -705,7 +707,8 @@ def performanceload(request):
                         Age_Group_Performance = agp,
                         event_group = geteventgroup(dets[0].text),
                         event_type = geteventgroup(dets[0].text),
-                        year = yr1
+                        year = yr1,
+                        XCSeason = xcdate
                     )
                     perf.save()
  #       except:

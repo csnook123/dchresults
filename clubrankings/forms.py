@@ -118,6 +118,7 @@ class Results_Filter(forms.Form):
         Gender = forms.ChoiceField(choices=Gender)
         League = forms.ChoiceField(choices=League)
         League_Date = forms.ChoiceField(choices=League_Date)
+        XCSeason = forms.ChoiceField(choices=year)
         ShowAllClubs = forms.ChoiceField(choices=Clubs)
         Results_View = forms.ChoiceField(choices=ResultsView)
 
@@ -130,6 +131,7 @@ class Charts_Filter(forms.Form):
         Gender = forms.ChoiceField(choices=Gender)
         League = forms.ChoiceField(choices=League)
         League_Date = forms.ChoiceField(choices=League_Date)
+        XCSeason = forms.ChoiceField(choices=year)
         ShowAllClubs = forms.ChoiceField(choices=Clubs)
         Results_View = forms.ChoiceField(choices=ResultsView)
 
