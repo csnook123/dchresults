@@ -1,10 +1,12 @@
 from django.shortcuts import render
+from django.http  import HttpResponse
 from .forms import *
 from pandas import DataFrame
 import dataload.views as dl
 from bokeh.plotting import figure
 from bokeh.embed import components
 import datetime
+import numpy as np
 
 def make_clickable(id,val):
     return f'<a href={id}>{val}</a>'
@@ -12,7 +14,7 @@ def make_clickable(id,val):
 def rankingframe():
     db = sqlite3.connect('db.sqlite3')
     rankingquery = db.cursor()
-    sql = 'select event, a.name as name, performance, sex,meeting, venue, date, Age_Group_Performance'
+    sql = 'select event, position, 1001 - position as Harrier_League_Points, a.name as name, performance, sex,meeting, venue, date, Age_Group_Performance'
     sql += ' , club_at_performance,year,event_group, event_type from dataload_performances p INNER JOIN dataload_athlete a on '
     sql += 'a.athlete_id = p.athlete_id ' 
     sql += 'where club_at_performance = "Durham"'
@@ -26,12 +28,12 @@ def league_frame():
     league_query = db.cursor()
     #sql = 'Select * '
     #sql = 'Select count(*) '
-    sql = 'Select event, race,year, event_group, pos, perf,a.athlete_id, r.name as name, age_group, r.club AS club, gender,date,meeting,venue, points '
+    sql = 'Select event, race,year, event_group, pos, perf,r.athlete_id, r.name as name, age_group, r.club AS club, gender,date,meeting,venue, points '
     sql +=' from dataload_results r ' 
     sql +='INNER JOIN dataload_meets m '
     sql +=' on r.meeting_id = m.meeting_id '
-    sql +=' INNER JOIN dataload_athlete a '
-    sql +=' on a.athlete_id = r.athlete_id'    
+#    sql +=' INNER JOIN dataload_athlete a '
+#    sql +=' on a.athlete_id = r.athlete_id'    
     t = league_query.execute(sql)
     t = pd.DataFrame(t.fetchall(), columns = [x[0] for x in t.description])
     return t
@@ -62,7 +64,7 @@ def filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event):
             t = t[t['event'] == Event]
         return t
 
-def filter_league_frame(t,Year,Gender,Age_Group,Event_Group,Event,League,League_Date):
+def filter_league_frame(t,Year,Gender,Age_Group,Event_Group,Event,League,League_Date,Clubs):
     if Year != "All":
         t = t[t['year'] == Year]
     if Gender != "All":
@@ -76,8 +78,10 @@ def filter_league_frame(t,Year,Gender,Age_Group,Event_Group,Event,League,League_
     if League != "All":
         t = t[t['meeting'] == League]
     if League_Date != "All":
-        t = t[t['event'] == League_Date]
-        return t
+        t = t[t['date'] == League_Date]
+    if Clubs == "no":
+        t = t[t['club'] == 'Durham']
+    return t
 
 
 # Create your views here.
@@ -92,9 +96,9 @@ def form_view(request,*args):
     Gender = request.GET.get('Gender')
     League = request.GET.get('League')
     League_Date = request.GET.get('League_Date')
+    Clubs = request.GET.get('ShowAllClubs')
     Results_View = request.GET.get('Results_View')
-    #athlete_id = request.Get.get('id')
-
+    
     form = Results_Filter(initial={
         'Age_Group' : Age_Group,
         'Event_Group' : Event_Group,
@@ -103,6 +107,7 @@ def form_view(request,*args):
         'Gender': Gender,
         'League': League,
         'League_Date': League_Date,
+        'ShowAllClubs': Clubs,
         'Results_View': Results_View
     })
 
@@ -193,13 +198,25 @@ def form_view(request,*args):
         context['guide'] += " event, with the option to filter by year, date of match/event group etc. "
         
         t = league_frame()
-        t = filter_league_frame(t,Year,Gender,Age_Group,Event_Group,Event,League,League_Date)
-
-        t = t.groupby(['athlete_id','name','event_group'], as_index=False).agg(
+        t = filter_league_frame(t,Year,Gender,Age_Group,Event_Group,Event,League,League_Date,Clubs)
+        t['Barriers'] = np.where(t['event_group']=='Barriers', t['points'], 0)
+        t['Endurance'] = np.where(t['event_group']=='Endurance', t['points'], 0)
+        t['Jumps'] = np.where(t['event_group']=='Jumps', t['points'], 0)
+        t['Sprints'] = np.where(t['event_group']=='Sprints', t['points'], 0)
+        t['Throws'] = np.where(t['event_group']=='Throws', t['points'], 0)
+        t = t.groupby(['athlete_id','name','club'], as_index=False).agg(
                 TotalPoints = ('points','sum'),
                 TotalEvents = ('points','count'),
-                AveragePoints = ('points','mean'))        
+                AveragePoints = ('points','mean'),
+                Barriers = ('Barriers','sum'),
+                Endurance = ('Endurance','sum'),
+                Jumps = ('Jumps','sum'),
+                Sprints = ('Sprints','sum'),
+                Throws = ('Throws','sum')
+                
+                )        
         t = t.sort_values(by='TotalPoints', ascending=False)
+        t['Rank'] = t.sort_values(by=['TotalPoints']).reset_index().index + 1
 
         for i in range(0,len(t.index)):
             t['name'][i] = make_clickable(t['athlete_id'][i],t['name'][i])
@@ -213,11 +230,43 @@ def form_view(request,*args):
         context['guide'] += " lifted from Power of 10"
 
         t = league_table()
-        t = t.groupby(['club','event_group'], as_index=False).agg(
-        TotalPoints = ('points','sum'))
+        t = filter_league_frame(t,Year,Gender,Age_Group,Event_Group,Event,League,League_Date,Clubs)
+        t['Barriers'] = np.where(t['event_group']=='Barriers', t['points'], 0)
+        t['Endurance'] = np.where(t['event_group']=='Endurance', t['points'], 0)
+        t['Jumps'] = np.where(t['event_group']=='Jumps', t['points'], 0)
+        t['Sprints'] = np.where(t['event_group']=='Sprints', t['points'], 0)
+        t['Throws'] = np.where(t['event_group']=='Throws', t['points'], 0)
+        t = t.groupby(['club'], as_index=False).agg(
+                TotalPoints = ('points','sum'),
+                TotalEvents = ('points','count'),
+                AveragePoints = ('points','mean'),
+                Barriers = ('Barriers','sum'),
+                Endurance = ('Endurance','sum'),
+                Jumps = ('Jumps','sum'),
+                Sprints = ('Sprints','sum'),
+                Throws = ('Throws','sum')
+                
+                )        
+        t = t.sort_values(by='TotalPoints', ascending=False)
+        t['Rank'] = t.sort_values(by=['TotalPoints']).reset_index().index + 1
         context['output'] = t.to_html()
 
-        
+    if Results_View == 'Total Harrier League Points':
+        context['guide'] = "The aim of this view is to show the total points accumulated "
+        context['guide'] += " by each DCH athlete in the Start North East Harrier League"
+        context['guide'] += " currently filters by Calendar year, but I need a way to filter "
+        context['guide'] += " by season "
+           
+        r = rankingframe()
+        r = filter_ranking_frame(r,Year,Gender,Age_Group,Event_Group,Event)
+        r = r[r['meeting'] == 	'Start Fitness North Eastern Harrier League']
+        r = r.groupby(['name','Age_Group_Performance'], as_index=False).agg(
+                TotalPoints = ('Harrier_League_Points','sum'),
+                TotalEvents = ('Harrier_League_Points','count'),
+                AveragePoints = ('Harrier_League_Points','mean'))        
+        r = r.sort_values(by='TotalPoints', ascending=False)
+        context['output'] = r.to_html()
+
 
     #if athlete_id !='':
     #    t = league_frame()
@@ -242,6 +291,8 @@ def profile(request,id):
 
 
 def charts(request,num):
+
+
         #Code to generate a form to input values and Get Options to a URL to be used as variables
     context ={}
     Age_Group = request.GET.get('Age_Group')
@@ -309,6 +360,32 @@ def charts(request,num):
         p.y_range.start = 0
         script, div = components(p)
 
+    if num == '3':
+        t = rankingframe()
+        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event)
+
+
+        r = t.groupby(['year'], as_index=False).agg(
+        Performances = ('performance','count'))
+
+        year = r['year'].to_list()
+        Performances = r['Performances'].to_list()
+        p = figure(x_range=year, height=350, title="Number of Performances each year",
+           toolbar_location=None, tools="")
+        p.vbar(x=year, top=Performances, width=0.9)
+        p.xgrid.grid_line_color = None
+        p.y_range.start = 0
+        script, div = components(p)
+
 
 
     return render(request, 'clubrankings/bokeh.html',  {'form': form, 'script': script, 'div': div})
+
+def test(request):
+    r = rankingframe()
+#    r = r[r['event'] == 'HT7.26K']
+    return HttpResponse(r.to_html())
+
+
+def test1(request):
+    return HttpResponse()

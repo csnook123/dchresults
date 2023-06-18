@@ -533,6 +533,7 @@ eventcategorisation = [
 
 ]
 
+
 def geteventgroup(event):
     for item in eventcategorisation: 
         if item[0] == event:
@@ -843,33 +844,56 @@ def event_results_load(request):
     a = meets.objects.all()
 
     for competitions in a:
-        try:
-            j = competitions.meeting_id
-            url = f'https://www.thepowerof10.info/results/results.aspx?meetingid={j}'
-            html = requests.get(url)
-            soup = BeautifulSoup(html.text, 'html.parser')
-            meeting_dets = soup.find('div', {'id': 'pnlMainGeneral'}).find_all('table')[0].find('span')
-            meeting_res = soup.find('table', {'id': 'cphBody_dgP'}).find_all('tr')[1:]
-            count = -1
-            for i in meeting_res:
-                dets = i.find_all('td')
-                if len(dets) == 1 and '\xa0' not in str(dets[0]):
-                    vals = str(dets[0].text).split(" ")
-                    count += 1            
-                else:
-                    if '\xa0' not in str(dets[0]) and 'Pos' not in str(dets[0].text) :
-                        race = vals[2] if len(vals)>2 else 1
-                        posn = dets[0].text
-                        for item in eventcategorisation: 
-                            if item[0] == vals[0]:
-                                eg = item[1]
-                                et = item[2]
-                        try:
-                            x = dets[7].text.find("/")
-                            x = dets[7].text[0:x:1]
-                            if x in ('Durham','Chester-le-Street'):
-                                x = "Durham/Chester-Le-Street"
+        j = competitions.meeting_id
+        for pageno in [1,2,3]:
+            try: 
+                url = f'https://www.thepowerof10.info/results/results.aspx?meetingid={j}&pagenum={pageno}'
+                html = requests.get(url)
+                soup = BeautifulSoup(html.text, 'html.parser')
+                meeting_dets = soup.find('div', {'id': 'pnlMainGeneral'}).find_all('table')[0].find('span')
+                meeting_res = soup.find('table', {'id': 'cphBody_dgP'}).find_all('tr')[1:]
+                count = -1
+                for i in meeting_res:
+                    dets = i.find_all('td')
+                    if len(dets) == 1 and '\xa0' not in str(dets[0]):
+                        vals = str(dets[0].text).split(" ")
+                        count += 1    
+                    else:
+                        if '\xa0' not in str(dets[0]) and 'Pos' not in str(dets[0].text) :
+                            #Need scenario analysis for which fields are populated
+                            scenario = [0,3,5,6,7,10]
+                            length = 12
+                            #Adjust the positions if there is no wind recorded
+                            if len(dets[2].text) > 4:
+                                scenario = [0,2,4,5,6,9]
+                                length = length-1
+                            #Adjust the positions if the performance was not a seasons best or personal best
+                            if dets[scenario[1]+1] not in ('SB','PB'): 
+                                scenario[2] = scenario[2]-1 
+                                scenario[3] = scenario[3]-1
+                                scenario[4] = scenario[4]-1
+                                scenario[5] = scenario[5]-1
+                                length = length -1
+                            #Adjust the positions for inclusion of coach and whether it is 
+                            #an NEYDL match.
+                            if len(dets) != length and 'Youth' not in competitions.meeting :
+                                scenario[5] = scenario[5]-1
 
+                            #Variables for the Heat and Position to calculate points
+                            r = str(vals[2] if len(vals)>2 else 1),
+                            p = str(dets[0].text)[0],
+
+                            #finding the first clube in the list 
+                            #by searching fro / and only including up to that text
+                            singleclub = dets[scenario[5]].text.find('/')
+                            if singleclub != -1:
+                                singleclub = dets[scenario[5]].text[0:singleclub:1]
+                            else: singleclub = dets[scenario[5]].text
+                            #Problems processing athlete id in a small number of cases, 
+                            #Escaping the problem in the odd cases of failure
+                            try:
+                                namecheck = str(dets[scenario[1]]).split('"')[1].split('=')[1] if len(str(dets[scenario[1]]).split('"')) > 1 else ''
+                            except: ''
                             r = results(
                                 meeting_id = j,
                                 event = vals[0],
@@ -877,36 +901,15 @@ def event_results_load(request):
                                 race = vals[2] if len(vals)>2 else 1,
                                 pos = dets[0].text,
                                 perf = dets[1].text,
-                                name = dets[2].text,
-                                age_group = dets[4].text,
-                                gender = dets[5].text,
-                                club = x,
-                                athlete_id = str(dets[2]).split('"')[1].split('=')[1] if len(str(dets[2]).split('"')) > 1 else '',
-                                points = league_points_calc(str(race),str(posn)),
-                                event_group = et
+                                name = dets[scenario[1]].text,
+                                age_group = dets[scenario[3]].text,
+                                gender = dets[scenario[4]].text,
+                                club = singleclub,
+                                athlete_id = namecheck,
+                                points = league_points_calc(r[0],p[0]),
+                                event_group = geteventgroup(vals[0])
                             )
                             r.save()
-                        except:
-                            x = dets[8].text.find("/")
-                            x = dets[8].text[0:x:1]
-                            if x in ('Durham','Chester-le-Street'):
-                                x = "Durham/Chester-Le-Street"
-                            r = results(
-                                meeting_id = j,
-                                event = vals[0],
-                                event_age_group = vals[1],
-                                race = vals[2] if len(vals)>2 else 1,
-                                pos = dets[0].text,
-                                perf = dets[1].text,
-                                name = dets[3].text,
-                                age_group = dets[5].text,
-                                gender = dets[6].text,
-                                club = x,
-                                athlete_id = str(dets[3]).split('"')[1].split('=')[1] if len(str(dets[3]).split('"')) > 1 else '',
-                                points = league_points_calc(str(race),str(posn)),
-                                event_group = et
-                            )  
-                            r.save()
-        except:''
+            except:''
     end = default_timer()
     return HttpResponse('Meet Loaded ' + repr(end-start))

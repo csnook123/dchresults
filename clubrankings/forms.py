@@ -62,6 +62,10 @@ def age_group():
     event = tuple(r.itertuples(index=False, name=None))
     return event
 
+Clubs = [
+     ('yes',u'yes'),
+     ('no',u'no')
+]     
 
 Gender = [
         ('All',u'All'),     
@@ -93,7 +97,9 @@ ResultsView = [
         ('Top 100 Performances',u'Top 100 Performances'),
         ('Total League Points',u'Total League Points'),
         ('League Tables',u'League Tables'),
-        ('Top 30 Athletes',u'Top 30 Athletes')
+        ('Top 30 Athletes',u'Top 30 Athletes'),
+        ('Total Harrier League Points',u'Total Harrier League Points')
+
 
 ]
 
@@ -112,6 +118,7 @@ class Results_Filter(forms.Form):
         Gender = forms.ChoiceField(choices=Gender)
         League = forms.ChoiceField(choices=League)
         League_Date = forms.ChoiceField(choices=League_Date)
+        ShowAllClubs = forms.ChoiceField(choices=Clubs)
         Results_View = forms.ChoiceField(choices=ResultsView)
 
 class Charts_Filter(forms.Form):
@@ -123,5 +130,6 @@ class Charts_Filter(forms.Form):
         Gender = forms.ChoiceField(choices=Gender)
         League = forms.ChoiceField(choices=League)
         League_Date = forms.ChoiceField(choices=League_Date)
+        ShowAllClubs = forms.ChoiceField(choices=Clubs)
         Results_View = forms.ChoiceField(choices=ResultsView)
 
