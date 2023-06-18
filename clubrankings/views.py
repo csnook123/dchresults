@@ -308,6 +308,7 @@ def charts(request,num):
     Gender = request.GET.get('Gender')
     League = request.GET.get('League')
     League_Date = request.GET.get('League_Date')
+    XCSeason = request.GET.get('XCSeason')
     Results_View = request.GET.get('Results_View')
     #athlete_id = request.Get.get('id')
 
@@ -319,13 +320,14 @@ def charts(request,num):
         'Gender': Gender,
         'League': League,
         'League_Date': League_Date,
+        'XCSeason':XCSeason,
         'Results_View': Results_View
     })
 
 
     if num == '1':
         t = rankingframe()
-        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event)
+        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event,XCSeason)
 
 
         r = t.groupby(['event'], as_index=False).agg(
@@ -343,7 +345,7 @@ def charts(request,num):
     
     if num == '2':
         t = rankingframe()
-        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event)
+        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event,XCSeason)
 
         if Event_Group in ('Throws','Jumps','Combined Events'):
             r = t.groupby(['year'], as_index=False).agg(
@@ -368,7 +370,7 @@ def charts(request,num):
 
     if num == '3':
         t = rankingframe()
-        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event)
+        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event,XCSeason)
 
 
         r = t.groupby(['year'], as_index=False).agg(
