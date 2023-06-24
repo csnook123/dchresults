@@ -91,14 +91,22 @@ def form_view(request,*args):
 
     #Code to generate a form to input values and Get Options to a URL to be used as variables
     context ={}
-    Age_Group = request.GET.get('Age_Group')
-    Event_Group = request.GET.get('Event_Group')
-    Year = request.GET.get('Year')
-    Event = request.GET.get('Event')
-    Gender = request.GET.get('Gender')
-    League = request.GET.get('League')
-    League_Date = request.GET.get('League_Date')
-    XCSeason = request.GET.get('XCSeason')
+    if request.GET.get('Age_Group') is None: Age_Group = 'All' 
+    else: Age_Group = request.GET.get('Age_Group')
+    if request.GET.get('Event_Group') is None: Event_Group = 'All' 
+    else: Event_Group = request.GET.get('Event_Group')
+    if request.GET.get('Year') is None: Year = 'All' 
+    else: Year = request.GET.get('Year')
+    if request.GET.get('Event') is None: Event = 'All' 
+    else: Event = request.GET.get('Event')
+    if request.GET.get('Gender') is None: Gender = 'All' 
+    else: Gender = request.GET.get('Gender')
+    if request.GET.get('League') is None: League = 'All' 
+    else: League = request.GET.get('League')
+    if request.GET.get('League_Date') is None: League_Date = 'All' 
+    else: League_Date = request.GET.get('League_Date')
+    if request.GET.get('XCSeason') is None: XCSeason = 'All' 
+    else: XCSeason = request.GET.get('XCSeason')
     Clubs = request.GET.get('ShowAllClubs')
     Results_View = request.GET.get('Results_View')
     
@@ -128,7 +136,7 @@ def form_view(request,*args):
                                 'date','year','event_group','Age_Group_Performance',
                                 'club_at_performance'])
 
-        t = filter_ranking_frame(t, Year,Gender,Age_Group,Event_Group,Event)
+        t = filter_ranking_frame(t, Year,Gender,Age_Group,Event_Group,Event,XCSeason)
         if dl.geteventgroup(Event) in ('Throws','Jumps','Combined Events'):
             try:
                 t['performance'] = t['performance'].astype(float)
@@ -148,7 +156,7 @@ def form_view(request,*args):
                                 'date','year','event_group','Age_Group_Performance',
                                 'club_at_performance'])
 
-        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event)
+        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event,XCSeason)
         
         #Events where high is good
         options = ('Throws','Jumps','Combined Events')
@@ -172,7 +180,7 @@ def form_view(request,*args):
                                 'date','year','event_group','Age_Group_Performance',
                                 'club_at_performance'])
 
-        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event)
+        t = filter_ranking_frame(t,Year,Gender,Age_Group,Event_Group,Event,XCSeason)
         
         #Events where high is good
         options = ('Throws','Jumps','Combined Events')
@@ -269,6 +277,7 @@ def form_view(request,*args):
                 TotalEvents = ('Harrier_League_Points','count'),
                 AveragePoints = ('Harrier_League_Points','mean'))        
         r = r.sort_values(by='TotalPoints', ascending=False)
+        r['Rank'] = r.sort_values(by=['TotalPoints'], ascending=False).reset_index().index + 1
         for i in range(0,len(r.index)):
             r['name'][i] = make_clickable(r['athlete_id'][i],r['name'][i])        
         context['output'] = r.to_html(render_links=True,escape=False,index=False)
@@ -281,6 +290,39 @@ def form_view(request,*args):
 
 def profile(request,id):
     context = {}
+    if request.GET.get('Age_Group') is None: Age_Group = 'All' 
+    else: Age_Group = request.GET.get('Age_Group')
+    if request.GET.get('Event_Group') is None: Event_Group = 'All' 
+    else: Event_Group = request.GET.get('Event_Group')
+    if request.GET.get('Year') is None: Year = 'All' 
+    else: Year = request.GET.get('Year')
+    if request.GET.get('Event') is None: Event = 'All' 
+    else: Event = request.GET.get('Event')
+    if request.GET.get('Gender') is None: Gender = 'All' 
+    else: Gender = request.GET.get('Gender')
+    if request.GET.get('League') is None: League = 'All' 
+    else: League = request.GET.get('League')
+    if request.GET.get('League_Date') is None: League_Date = 'All' 
+    else: League_Date = request.GET.get('League_Date')
+    if request.GET.get('XCSeason') is None: XCSeason = 'All' 
+    else: XCSeason = request.GET.get('XCSeason')
+    Clubs = request.GET.get('ShowAllClubs')
+    Results_View = request.GET.get('Results_View')
+    
+    form = Results_Filter(initial={
+        'Age_Group' : Age_Group,
+        'Event_Group' : Event_Group,
+        'Year' : Year,
+        'Event': Event,
+        'Gender': Gender,
+        'League': League,
+        'League_Date': League_Date,
+        'ShowAllClubs': Clubs,
+        'XCSeason': XCSeason,
+        'Results_View': Results_View
+    })
+
+    context['form']= form
     t = league_frame()
     t = t[t['athlete_id']==id]
     context['guide1'] = 'An athlete profile showing performances in leagues for DCH'
@@ -289,10 +331,21 @@ def profile(request,id):
     TotalPoints = ('points','sum'))
     s = s.pivot(index = 'year', columns = 'event_group', values = 'TotalPoints')
     context['output1'] = s.to_html()
-    context['guide2'] = 'Followed up by a listing of all their performances'
+    context['guide2'] = 'Followed up by a listing of all their Track and Field league performances'
     context['output2'] = t.to_html()
-    context['guide3'] = ''
-    context['output3'] = ''
+    
+    r = rankingframe()
+    r = filter_ranking_frame(r,Year,Gender,Age_Group,Event_Group,Event,XCSeason)
+    r = r[r['athlete_id'] == id]
+    r = r[r['meeting'] == 	'Start Fitness North Eastern Harrier League']
+    context['guide3'] = 'Then a matrix showing athletes Harrier league points by year'
+    s = r.groupby(['year']).agg(
+    TotalPoints = ('Harrier_League_Points','sum')
+    )
+    context['output3'] = s.to_html()
+    context['guide4'] = 'Followed up by a listing of all their Start Harrier league performances'
+    context['output4'] = r.to_html()
+
     return render(request, "clubrankings/athlete_profile.html", context)
 
 
@@ -301,14 +354,22 @@ def charts(request,num):
 
         #Code to generate a form to input values and Get Options to a URL to be used as variables
     context ={}
-    Age_Group = request.GET.get('Age_Group')
-    Event_Group = request.GET.get('Event_Group')
-    Year = request.GET.get('Year')
-    Event = request.GET.get('Event')
-    Gender = request.GET.get('Gender')
-    League = request.GET.get('League')
-    League_Date = request.GET.get('League_Date')
-    XCSeason = request.GET.get('XCSeason')
+    if request.GET.get('Age_Group') is None: Age_Group = 'All' 
+    else: Age_Group = request.GET.get('Age_Group')
+    if request.GET.get('Event_Group') is None: Event_Group = 'All' 
+    else: Event_Group = request.GET.get('Event_Group')
+    if request.GET.get('Year') is None: Year = 'All' 
+    else: Year = request.GET.get('Year')
+    if request.GET.get('Event') is None: Event = 'All' 
+    else: Event = request.GET.get('Event')
+    if request.GET.get('Gender') is None: Gender = 'All' 
+    else: Gender = request.GET.get('Gender')
+    if request.GET.get('League') is None: League = 'All' 
+    else: League = request.GET.get('League')
+    if request.GET.get('League_Date') is None: League_Date = 'All' 
+    else: League_Date = request.GET.get('League_Date')
+    if request.GET.get('XCSeason') is None: XCSeason = 'All' 
+    else: XCSeason = request.GET.get('XCSeason')
     Results_View = request.GET.get('Results_View')
     #athlete_id = request.Get.get('id')
 
