@@ -1,9 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 {{guide1 |safe }}
+<form action = "" method = "get">
+
+{{form |safe }}
+<input type="submit" value=Submit><br>
+</form>
+
 {{output1 |safe }}
 <br>
 <br>
 {{guide2 |safe }}
 {{output2 |safe }}
+<br>
+<br>
+{{guide3 |safe }}
+{{output3 |safe }}
+<br>
+<br>
+{{guide4 |safe }}
+{{output4 |safe }}
 {% endblock %}
