@@ -6,6 +6,9 @@ from django.http import HttpResponse
 from timeit import default_timer
 from datetime import datetime, timedelta
 import sqlite3
+import mariadb as mdb
+import sys
+
 
 # Create your views here.
 initialslist = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
@@ -562,11 +565,11 @@ def league_points_calc(heat,position):
 
 def loadalldata(request):
     start = default_timer()
-    loadathletes()
-    performanceload()
-    coachingload()
-    personalbests()
-    rankingsload()
+    loadathletes(request)
+    performanceload(request)
+    coachingload(request)
+    personalbests(request)
+    rankingsload(request)
     end = default_timer()
     return HttpResponse('All Data loaded  '  + repr(end-start))
 
@@ -746,7 +749,11 @@ def rankingsload(request):
     return HttpResponse('Rankings Loaded time taken ' + repr(end-start))
 
 def checknumbers(request):
-    db = sqlite3.connect('db.sqlite3')
+    db = mdb.connect(user = 'dchresults', password = 'NALRESULTS',host = 'localhost',port=3306, database='dchresults')
+
+
+    #DevCode#
+    #sqlite3.connect('db.sqlite3')
     iterator = db.cursor()
     iterator.execute('select * from dataload_athlete')
     a = 0

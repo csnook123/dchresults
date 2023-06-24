@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'dchcalendar',
     'twitterfeed',
     'instagramfeed',
-    'twitter_feed',
 ]
 
 MIDDLEWARE = [
@@ -89,11 +88,14 @@ WSGI_APPLICATION = 'dchresults.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'dchresults',
+        'USER': 'dchresults',
+        'PASSWORD': 'NALRESULTS',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

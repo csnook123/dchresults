@@ -7,12 +7,18 @@ from bokeh.plotting import figure
 from bokeh.embed import components
 import datetime
 import numpy as np
+import mariadb as mdb
+import sys
 
 def make_clickable(id,val):
     return f'<a href={id}>{val}</a>'
 
 def rankingframe():
-    db = sqlite3.connect('db.sqlite3')
+    db = mdb.connect(user = 'dchresults', password = 'NALRESULTS',host = 'localhost',port=3306, database='dchresults')
+
+
+    #DevCode#
+    #sqlite3.connect('db.sqlite3')
     rankingquery = db.cursor()
     sql = 'select event, position, 1001 - position as Harrier_League_Points, a.name as name, performance, sex,meeting, venue, date, Age_Group_Performance'
     sql += ' , club_at_performance,year,event_group, a.athlete_id, event_type,XCSeason from dataload_performances p INNER JOIN dataload_athlete a on '
@@ -24,7 +30,11 @@ def rankingframe():
     return r
 
 def league_frame():
-    db = sqlite3.connect('db.sqlite3')
+    db = mdb.connect(user = 'dchresults', password = 'NALRESULTS',host = 'localhost',port=3306, database='dchresults')
+
+
+    #DevCode#
+    #sqlite3.connect('db.sqlite3')
     league_query = db.cursor()
     #sql = 'Select * '
     #sql = 'Select count(*) '

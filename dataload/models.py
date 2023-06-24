@@ -26,7 +26,7 @@ class performances(models.Model):
     position = models.CharField(max_length=50,default='')
     raceid = models.CharField(max_length=50,default='')
     venue = models.CharField(max_length=50,default='')
-    meeting = models.CharField(max_length=50,default='')
+    meeting = models.CharField(max_length=300,default='')
     date = models.DateField(default='',null=False)
     club_at_performance = models.CharField(max_length=50,default='')
     Age_Group_Performance = models.CharField(max_length=50,default='')   
